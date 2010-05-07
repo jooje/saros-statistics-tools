@@ -314,15 +314,21 @@ plot_OS <- function(dataset){
 					par.settings = simpleTheme(col=rainbow(length(levels(as.factor(sessions$os.name))))),
 					xlab="Number of Sessions",
 					ylab="Operating System",
-					xlim=c(0, max(sessions$x) + 1), 
+					horizontal = TRUE,
+					xlim=c(0, max(sessions$x) + 4), 
 					data=sessions,
 					col = hcl(h = seq(60, 480, by = 40)),
-					panel.text("suu"),
 					auto.key = list(
 							points = FALSE, 
 							rectangles = TRUE, 
 							corner = c(0.025,0.95)
-					)
+					),
+					panel <- function(...) {
+						args <- list(...);
+						panel.text(args$x,args$y,paste("     ", args$x,sep=""), cex=1.1);
+						panel.barchart(...)
+					}
+			
 			)
 	)
 }
