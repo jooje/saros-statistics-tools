@@ -347,27 +347,34 @@ plot_OSgroupWindows <- function(dataset){
 					xlab = "Number of Sessions",
 					ylab = "Operating System",
 					xlim = c(0, max(sessions$x) *1.1), 
-					col = hcl((h = seq(0,120, by = 40))),
+					col = hcl((h = seq(0,300, by = 100))),
 					data = sessions,
 					auto.key = list(
 							points = FALSE, 
 							rectangles = TRUE, 
 							corner = c(0.025,0.95)
-					)
+					),
+					panel <- function(...) {
+						args <- list(...);
+						panel.text(args$x,args$y,paste("       ", args$x,sep=""), cex=1.1);
+						panel.barchart(...)
+					}
 			)
 	)
 }
 
 plot_FeedbackDisabled <- function(dataset){
-	dataset = dataset[dataset$session.count == 1,]
+	dataset <- subset(dataset,!duplicated(dataset$random.user.id))
 	
 	mytable <- table(dataset$feedback.disabled)
-	lbls <- paste(names(mytable), "\n", mytable, sep="")
+	enum <- c("yes","no")
+	lbls <- paste((enum), "\n", mytable, sep="")
+	
 	print(
-			pie3D(	mytable, 
+			pie(	mytable, 
+					col=(c("green","red")),
 					labels = lbls,
-					explode = 0.3,
-					main="Feedback disabled at first session started?")
+					main="Users allowing feedback")
 	)
 }
 
@@ -415,9 +422,10 @@ plot_averageCommunicationUsage <- function(dataset) {
 }
 
 plot_IbbEventsPerSession <- function(dataset) {
+	dataset <- subset(dataset,!duplicated(dataset$session.id))
 	# Only look at sessions where a user was added
 	dataset = dataset[dataset$session.users.total > 1,]
-	dataset = dataset[dataset$session.time < 240,]
+	dataset = dataset[dataset$session.time < 300,]
 	
 	mytable <- table(dataset$data_transfer.IBB.number_of_events)
 	print(mytable)
@@ -552,7 +560,7 @@ plot_RoleChangesPie <- function(dataset) {
 ###################
 
 plot_UsersPerSession <- function(dataset) {
-	dataset <- dataset[dataset$user.is.host,]
+	dataset <- subset(dataset,!duplicated(dataset$session.id))
 	sessions <- aggregate(dataset$filename, list(session.users.total=dataset$session.users.total), length)
 	
 	print(
@@ -561,14 +569,19 @@ plot_UsersPerSession <- function(dataset) {
 					xlab="Number of Sessions",
 					ylab="Number of Users",
 					log = "x",
-					xlim=c(0, max(sessions$x) *1.05),
-					col = hcl((h = seq(0,240, by = 60))),
+					xlim=c(0, max(sessions$x) + 15),
+					col = hcl((h = seq(0,320, by = 80))),
 					data=sessions,
 					auto.key = list(
 							points = FALSE, 
 							rectangles = TRUE, 
 							corner = c(0.025,0.95)
-					)
+					),
+					panel <- function(...) {
+						args <- list(...);
+						panel.text(args$x,args$y,paste("       ", args$x,sep=""), cex=1.1);
+						panel.barchart(...)
+					}
 			)
 	)
 }
@@ -1037,11 +1050,11 @@ makePlots <- function() {
 				plot_SessionsPerWeek(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/OS", sep="/")), 8, 3, function(){
+	pngPlot((file=paste(getwd(), "plots/OS", sep="/")), 10, 6, function(){
 				plot_OS(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/OS(WindowsGrouped)", sep="/")), 8, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/OS(WindowsGrouped)", sep="/")), 10, 6, function(){
 				plot_OSgroupWindows(data)
 			})
 	
@@ -1049,7 +1062,7 @@ makePlots <- function() {
 				plot_SessionsPerWeekAndEclipseVersion(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/iBBEventsPerSession", sep="/")), 8, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/iBBEventsPerSession", sep="/")), 11, 7, function(){
 				plot_IbbEventsPerSession(data)
 			})
 	
@@ -1101,7 +1114,7 @@ makePlots <- function() {
 	# Users / Session #
 	###################
 	
-	pngPlot((file=paste(getwd(), "plots/usersPerSession", sep="/")), 8, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/usersPerSession", sep="/")), 12, 6, function(){
 				plot_UsersPerSession(data)
 			})
 	
