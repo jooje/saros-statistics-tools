@@ -11,8 +11,8 @@ load <- function(){
 	require(Hmisc)
 	
 	# read data in
-	# works for call on mac like
-	#       Rscript --vannilla /Users/..../script.R file.txt
+	# works for call 
+	#       Rscript --vannilla /..../script.R file.txt
 	data  <- read.delim(commandArgs()[7], comment.char="", quote="")
 	
 	# transform the booleans to get R to reckon them
