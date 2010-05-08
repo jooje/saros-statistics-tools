@@ -1,3 +1,9 @@
+#########################################################
+# R script for analysis of the Saros session statistics #
+# 	Based on a script by Christopher Oezbeck			#
+#   extended any partially improved by M. v. Hoffen     #
+#########################################################
+
 #################
 # Preprocessing #
 #################
@@ -15,7 +21,7 @@ load <- function(){
 	#       Rscript --vannilla /..../script.R file.txt
 	data  <- read.delim(commandArgs()[7], comment.char="", quote="")
 	
-	# transform the booleans to get R to reckon them
+	# transform the booleans and empty fields to get R to reckon them
 	data$user.is.host <- as.character(data$user.is.host)
 	data$user.is.host[data$user.is.host == "true"] <- "TRUE"
 	data$user.is.host[data$user.is.host == "false"] <- "FALSE"
@@ -34,9 +40,11 @@ load <- function(){
 	
 	# Remove all internal data 
 	# e.g. data statistic data submitted by members of the AG SE, including development or testing versions
-	data <- data[!(grepl("(internal|sarosTeam)", data$filename) | grepl("TESTING", data$saros.version)),]
+	data <- data[!(		grepl("(internal|sarosTeam)", data$filename) | 
+						grepl("TESTING", data$saros.version) | 
+						grepl("DEVEL", data$saros.version)),]
 	
-	# Remove all data before we know whether somebody is host
+	# Remove all sessions for which the host is NA
 	data <- data[!is.na(data$user.is.host),]
 	
 	# Fix a version glitch 
@@ -57,7 +65,9 @@ load <- function(){
 	# get rid of columns where all values are NA
 	data <- data[,colSums(is.na(data))<nrow(data)]
 	
+	# 
 	print("Data read in...")
+	
 	return(data)
 }
 
@@ -70,7 +80,7 @@ exportCsv <- function(dataset) {
 	filename = "statistics.txt"
 	source <- dataset
 	# write a tab separated tsv, use tab as seperator
-	write.table(source,filename,sep=",",row.names=FALSE,col.names=TRUE)
+	write.table(source, filename, sep=",", row.names=FALSE, col.names=TRUE)
 }
 
 #####################
@@ -84,7 +94,7 @@ pngPlot <- function(file, width, height, fun, png=FALSE){
 	png(paste(file, ".png", sep=""), width=width*100, height=height*100)
 	fun()
 	dev.off()
-
+	
 }
 
 #################
@@ -118,6 +128,7 @@ buildMonthLabels <- function(dateFactor, trimMonth=3){
 plot_DownloadsPerMonth <- function(){
 	# hardcoded vector containing the number of downloads according to month vector below
 	download <- c( 0, 87, 129, 182, 548, 726, 1247, 1696, 3042, 4131, 8311, 6655, 6359, 9625, 16768)
+	# TODO: read downloads from flossmole.org 
 	
 	# periods as enumerated type
 	months <- factor(c(
@@ -225,7 +236,7 @@ plot_SessionsPerWeekAndVersion <- function(dataset){
 					horizontal=F,
 					groups=version,
 					par.settings = simpleTheme(col=rainbow(length(levels(as.factor(sessions$version))))),
-					xlab="Week in 2009",
+					xlab="Week in 2009 / 2010",
 					ylab="Sessions per week",
 					xlim=c(0, max(weekNumeric) + 1), 
 					ylim=c(0, max(sessions$x)*1.1),
@@ -279,7 +290,7 @@ plot_SessionsPerWeekAndEclipseVersion <- function(dataset){
 					horizontal=F,
 					groups=version,
 					par.settings = simpleTheme(col=rainbow(length(levels(as.factor(sessions$version))))),
-					xlab="Week in 2009/2010",
+					xlab="Week in 2009 / 2010",
 					ylab="Sessions per week",
 					xlim=c(0, max(weekNumeric) + 1), 
 					ylim=c(0, max(sessions$x)*1.1),
@@ -477,7 +488,6 @@ plot_RoleChangesBoxes <- function(dataset) {
 	dataset = dataset[dataset$session.time > 3,]
 	dataset = dataset[dataset$session.time < 300,]
 	
-	print(dataset$role.changes)
 	print(
 			bwplot(
 					role.changes ~ session.time, 
@@ -555,6 +565,47 @@ plot_RoleChangesPie <- function(dataset) {
 	)
 }
 
+
+#####################
+# Role Distribution #
+#####################
+
+plot_DriverRatioBW <- function(dataset) {
+	dataset = dataset[dataset$session.users.total > 1,]
+	dataset = dataset[dataset$session.time < 300,]
+	
+	host = dataset$user.is.host == TRUE
+	
+	print(
+			bwplot(
+					host ~ role.driver.percent,
+					data=dataset,
+					xlab="Time in driver role",
+					ylab="User is host",
+					panel=panel.bwstrip,
+					type="mean,strip,density,N"
+			)
+	)
+}
+
+plot_ObserverRatioBW <- function(dataset) {
+	dataset = dataset[dataset$session.users.total > 1,]
+	dataset = dataset[dataset$session.time < 300,]
+	
+	host = dataset$user.is.host == TRUE
+	
+	print(
+			bwplot(
+					host ~ role.observer.percent,
+					data=dataset,
+					xlab="Time in driver role",
+					ylab="User is host",
+					panel=panel.bwstrip,
+					type="mean,strip,density,N"
+			)
+	)
+}
+
 ###################
 # Users / Session #
 ###################
@@ -589,6 +640,7 @@ plot_UsersPerSession <- function(dataset) {
 plot_UsersPerSessionPie <- function(dataset) {
 	dataset = dataset[dataset$user.is.host == TRUE,]	
 	mytable <- table(dataset$session.users.total)
+	
 	lbls <- paste(names(mytable), "\n", mytable, sep="")
 	print(
 			pie3D(	mytable, 
@@ -599,9 +651,9 @@ plot_UsersPerSessionPie <- function(dataset) {
 }
 
 plot_SessionCount <- function(dataset) {
-	#countAggregated = aggregate(dataset$filename, list(session.count=dataset$session.count), length)
-	#print(countAggregated)
-	#dataset <- dataset[dataset$user.is.host,]
+	# aggregate the sessions due to session count
+	# session count is incremented after each session started so this
+	# should give an impression on the long term usage of Saros
 	sessions = aggregate(dataset$filename, list(session.count=dataset$session.count), length)
 	
 	mytable <- table(dataset$session.count)
@@ -623,11 +675,11 @@ plot_SessionCount <- function(dataset) {
 # Session Duration #
 ####################
 
-plot_SessionDuration <- function(dataset){
-	
-	dataset = dataset[dataset$user.is.host,]
-	#dataset = dataset[dataset$session.users.total > 1,]
-	dataset = dataset[dataset$session.time < 240,]
+plot_SessionDuration <- function(dataset){	
+	dataset <- subset(dataset,!duplicated(dataset$session.id))
+	dataset = dataset[dataset$session.users.total > 1,]
+	dataset = dataset[dataset$session.time > 3,]
+	dataset = dataset[dataset$session.time < 300,]
 	
 	sessions <- dataset$session.time
 	
@@ -636,6 +688,7 @@ plot_SessionDuration <- function(dataset){
 					sessions,
 					main="Session Duration", 
 					cex=0.8,
+					col = "blue",
 					lines = TRUE,
 					dotsize = 0.5
 			)
@@ -645,16 +698,14 @@ plot_SessionDuration <- function(dataset){
 }
 
 plot_SessionDurationBox <- function(dataset){
-	
-	#dataset = dataset[dataset$user.is.host,]
+	#dataset <- subset(dataset,!duplicated(dataset$session.id))
 	dataset = dataset[dataset$session.users.total > 1,]
-	dataset = dataset[dataset$session.time < 60,]
 	dataset = dataset[dataset$session.time > 3,]
+	dataset = dataset[dataset$session.time < 300,]
 	
 	sessions <- dataset$session.time	
 	isHost = dataset$user.is.host == TRUE
 	a.resetplotparams()
-	
 	
 	print(
 			bwplot(
@@ -674,8 +725,6 @@ plot_SessionDurationBox <- function(dataset){
 					levels.fos = NULL
 			
 			)
-	
-	
 	)
 	
 }
@@ -686,7 +735,7 @@ plot_SessionDurationPie <- function(dataset) {
 	dataset = dataset[dataset$session.users.total > 1,]
 	dataset = dataset[dataset$session.time < 300,]
 	
-	
+	# probably not really elegant - session length grouped
 	sessionsLess5m <- dataset[dataset$session.time <= 5,]
 	
 	sessionsLess15m <- dataset[dataset$session.time <= 15,]
@@ -779,21 +828,29 @@ plot_SessionDurationBar <- function(dataset) {
 }
 
 plot_SessionDurationBW <- function(dataset){
-	
-	dataset = dataset[dataset$user.is.host,]
+	# include every session at most once
+	dataset <- subset(dataset,!duplicated(dataset$session.id))
 	dataset = dataset[dataset$session.users.total > 1,]
 	dataset = dataset[dataset$session.time < 300,]
+	dataset = dataset[dataset$session.time > 3,]
 	
-	moreThan50Edits = dataset$textedits.count > 50
+	threshold = 50
+	moreThan50Edits = dataset$textedits.count > threshold
 	
 	print(
 			bwplot(
 					moreThan50Edits ~ session.time,
 					data=dataset,
 					xlab="Length of session",
-					ylab="More than 50 edits in session",
+					ylab=paste("more TextEdits than ",threshold, sep=""),
 					panel=panel.bwstrip,
-					type="mean,strip,density,N"
+					varwidth = TRUE,
+					col = "red", 
+					pch = 1,
+					type="mean,strip,density,N,grid",
+					strip.limit = 311,
+					box.ratio=20,
+					levels.fos = NULL
 			)
 	)
 }
@@ -803,25 +860,37 @@ plot_SessionDurationBW <- function(dataset){
 ######################
 
 plot_LocalEdits <- function(dataset){
+	# only local edits
 	dataset = dataset[dataset$user.is.host,]
+	# we are interested in PP not single programming
 	dataset = dataset[dataset$session.users.total > 1,]
-	dataset = dataset[dataset$session.time < 240,]
-	dataset = dataset[dataset$textedits.chars < 100000]
+	# identified an outlier at approx. 8000 edits, all other values well below 4000
+	dataset = dataset[dataset$textedits.count < 3800,]
 	
 	print(
 			bwplot(
 					~ textedits.count,
 					data=dataset,
-					xlab="Text Edits", panel=panel.bwstrip,
-					type="mean,strip,density,N"
+					xlab="Text Edits", 
+					panel=panel.bwstrip,
+					varwidth = TRUE,
+					col = "red", 
+					pch = 1,
+					box.ratio=20,
+					type="mean,strip,density,N,grid",
+					strip.limit = 1000,
 			)
 	)
 }
 
 plot_LocalChars <- function(dataset){	
 	dataset = dataset[dataset$user.is.host,]
+	# interested in PP only
 	dataset = dataset[dataset$session.users.total > 1,]
-	dataset = dataset[dataset$session.time < 240,]
+	# one manually detected outlier all other values well below 10000 chars being added
+	dataset = dataset[dataset$textedits.chars < 10000,]
+	# at least 3 minutes session length
+	dataset = dataset[dataset$session.time > 3,]
 	
 	print(
 			bwplot(
@@ -829,7 +898,12 @@ plot_LocalChars <- function(dataset){
 					data=dataset,
 					xlab="Chars", 
 					panel=panel.bwstrip,
-					type="mean,strip,density,N"
+					varwidth = TRUE,
+					col = "red", 
+					pch = 1,
+					box.ratio=20,
+					type="mean,strip,density,N,grid",
+					strip.limit = 1000,
 			)
 	)
 }
@@ -837,7 +911,9 @@ plot_LocalChars <- function(dataset){
 plot_SessionDurationVsLocalEdits <- function(dataset){
 	dataset = dataset[dataset$user.is.host,]
 	dataset = dataset[dataset$session.users.total > 1,]
-	dataset = dataset[dataset$session.time < 240,]
+	dataset = dataset[dataset$session.time < 300,]
+	dataset = dataset[dataset$textedits.chars < 10000,]
+	dataset = dataset[dataset$textedits.count < 3800,]
 	
 	print(
 			xyplot(
@@ -873,17 +949,21 @@ plot_NonParallelEditsPerSession <- function(dataset){
 	dataset = dataset[dataset$user.is.host,]
 	dataset = dataset[dataset$session.users.total > 1,]
 	dataset = dataset[dataset$session.time < 300,]
+	dataset = dataset[dataset$textedits.chars < 10000,]
+	dataset = dataset[dataset$textedits.count < 3800,]
 	
-	Over50PercentNonParallelEdits = dataset$textedits.nonparallel.percent > 50
+	threshold = 99
+	Over50PercentNonParallelEdits = dataset$textedits.nonparallel.percent > threshold
 	
 	print(
 			bwplot(
 					Over50PercentNonParallelEdits ~ textedits.count,
 					data=dataset,
 					xlab="Textedits per session",
-					ylab="> 50Percent non parallel edits in session",
+					ylab=(paste("parallel edits percentage over ", threshold, sep="")),
 					panel=panel.bwstrip,
-					type="mean,strip,density,N"
+					type="mean,strip,density,N,grid",
+					strip.limit = 1000,
 			)
 	)	
 }
@@ -891,7 +971,8 @@ plot_NonParallelEditsPerSession <- function(dataset){
 plot_DegreeOfParallelism <- function(dataset) {
 	# Only look at sessions where a user was added
 	dataset = dataset[dataset$session.users.total > 1,]
-	dataset = dataset[dataset$session.time < 240,]
+	dataset = dataset[dataset$session.time < 300,]
+	dataset = dataset[dataset$session.time > 3,]
 	dataset <- dataset[dataset$user.is.host,]
 	
 	# aggregate data in respect to percentage of concurrent edits
@@ -905,7 +986,22 @@ plot_DegreeOfParallelism <- function(dataset) {
 					xlab="Number of Sessions",
 					ylab="% of non parallel changes"
 			)
-	)		
+	)	
+	
+#	Perc100 <- dataset[dataset$textedits.nonparallel.percent == 100,]
+#	PercLess100 <- dataset[dataset$textedits.nonparallel.percent < 100,]	
+#	
+#	m <- c(NROW(Perc100), NROW(PercLess100))
+#	lbls <- c("100%", "<100%")
+#	print(
+#			pie3D(
+#					m,a
+#					labels = lbls,
+#					main = "Degree of non parallel Edits",
+#					explode = .1
+#			)
+#	)
+	
 }
 
 plot_IntervalsOfConcurrentEdits <- function(dataset) {
@@ -934,25 +1030,6 @@ plot_IntervalsOfConcurrentEdits <- function(dataset) {
 	
 }
 
-plot_NonParallelCharsPerSession <- function(dataset) {
-	# only look at sessions once and where there were at least 2 participators
-	dataset = dataset[dataset$user.is.host,]	
-	dataset = dataset[dataset$session.users.total > 1,]
-	# non parallel char edits
-	nonParaChars <- dataset$textedits.nonparallel.chars
-	# remove all NA values
-	nonParaChars <- nonParaChars[!is.na(nonParaChars)]
-	
-	# plot number of non parallel chars per session
-	
-	plot(nonParaChars, 
-			xlab="sessions", 
-			ylab="non parallel chars", 
-			main="non parallel chars per session", 
-			pch=15, 
-			col="blue")
-}
-
 plot_NonParallelPercentageVsChars <- function(dataset) {
 	dataset = dataset[dataset$user.is.host,]
 	dataset = dataset[dataset$session.users.total > 1,]
@@ -972,62 +1049,29 @@ plot_NonParallelPercentageVsChars <- function(dataset) {
 }
 
 plot_LocalEditsVsChars <- function(dataset) {
+	# get rid of some outliers and evalute only PP sessions
 	dataset = dataset[dataset$user.is.host,]
 	dataset = dataset[dataset$session.users.total > 1,]
-	dataset = dataset[dataset$session.time < 240,]
+	dataset = dataset[dataset$session.time < 300,]
+	dataset = dataset[dataset$textedits.chars < 10000,]
+	dataset = dataset[dataset$textedits.count < 3800,]
 	
+	# an abline is drawn
+	# the closer the dots are to this line, the less auto completion or paste actions were
+	# being done. dots approx. on the line mean, that there were no pastes or autocompletions
 	print(
 			xyplot(
-					textedits.chars ~ textedits.count,
-					data=dataset,
+					dataset$textedits.chars ~ dataset$textedits.count,
 					xlab="Number of Edits",
 					ylab="Number of Chars",
-					auto.key = FALSE,
-					aspect = "fill",
-					cex=1			
+					panel = function(...) {
+						panel.xyplot(...);
+						panel.abline(1,1);
+					}	
 			)
 	)
 }
 
-#####################
-# Role Distribution #
-#####################
-
-plot_DriverRatioBW <- function(dataset) {
-	dataset = dataset[dataset$session.users.total > 1,]
-	dataset = dataset[dataset$session.time < 300,]
-	
-	host = dataset$user.is.host == TRUE
-	
-	print(
-			bwplot(
-					host ~ role.driver.percent,
-					data=dataset,
-					xlab="Time in driver role",
-					ylab="User is host",
-					panel=panel.bwstrip,
-					type="mean,strip,density,N"
-			)
-	)
-}
-
-plot_ObserverRatioBW <- function(dataset) {
-	dataset = dataset[dataset$session.users.total > 1,]
-	dataset = dataset[dataset$session.time < 300,]
-	
-	host = dataset$user.is.host == TRUE
-	
-	print(
-			bwplot(
-					host ~ role.observer.percent,
-					data=dataset,
-					xlab="Time in driver role",
-					ylab="User is host",
-					panel=panel.bwstrip,
-					type="mean,strip,density,N"
-			)
-	)
-}
 
 ###########################
 # Call Plotting Functions #
@@ -1155,7 +1199,7 @@ makePlots <- function() {
 	# Edits / Chars #
 	#################
 	
-	pngPlot((file=paste(getwd(), "plots/sessionDurationVsLocalEdits", sep="/")), 8, 6, function(){
+	pngPlot((file=paste(getwd(), "plots/sessionDurationVsLocalEdits", sep="/")), 20, 7, function(){
 				plot_SessionDurationVsLocalEdits(data)
 			})
 	
@@ -1183,14 +1227,10 @@ makePlots <- function() {
 				plot_NonParallelEditsPerSession(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/nonParallelCharsPerSession", sep="/")), 8, 8, function(){
-				plot_NonParallelCharsPerSession(data)
-			})
-	
 	pngPlot((file=paste(getwd(), "plots/nonParallelPercentageVsChars", sep="/")), 8, 8, function(){
 				plot_NonParallelPercentageVsChars(data)
 			})	
-
+	
 }
 
 ################# 
