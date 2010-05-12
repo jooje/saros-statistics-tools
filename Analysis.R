@@ -1053,8 +1053,6 @@ plot_LocalEditsVsChars <- function(dataset) {
 	dataset = dataset[dataset$session.users.total > 1,]
 	dataset = dataset[dataset$textedits.chars < 10000,]
 	
-	#print((NROW(dataset)))
-	
 	# an abline is drawn
 	# the closer the dots are to this line, the less auto completion or paste actions were
 	# being done. dots approx. on the line mean, that there were no pastes or autocompletions
@@ -1069,6 +1067,7 @@ plot_LocalEditsVsChars <- function(dataset) {
 					panel = function(...) {
 						panel.xyplot(...);
 						panel.abline(1,1);
+						panel.abline(1,2, lty="dotted");
 						panel.abline(h=400, lty = "dashed");
 					}	
 			)
