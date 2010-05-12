@@ -1050,11 +1050,10 @@ plot_NonParallelPercentageVsChars <- function(dataset) {
 
 plot_LocalEditsVsChars <- function(dataset) {
 	# get rid of some outliers and evalute only PP sessions
-	dataset = dataset[dataset$user.is.host,]
 	dataset = dataset[dataset$session.users.total > 1,]
-	dataset = dataset[dataset$session.time < 300,]
 	dataset = dataset[dataset$textedits.chars < 10000,]
-	dataset = dataset[dataset$textedits.count < 3800,]
+	
+	#print((NROW(dataset)))
 	
 	# an abline is drawn
 	# the closer the dots are to this line, the less auto completion or paste actions were
@@ -1064,9 +1063,13 @@ plot_LocalEditsVsChars <- function(dataset) {
 					dataset$textedits.chars ~ dataset$textedits.count,
 					xlab="Number of Edits",
 					ylab="Number of Chars",
+					type = c("p", "g"),
+					pch=4,
+					cex=1.0,
 					panel = function(...) {
 						panel.xyplot(...);
 						panel.abline(1,1);
+						panel.abline(h=400, lty = "dashed");
 					}	
 			)
 	)
