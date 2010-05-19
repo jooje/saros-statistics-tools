@@ -458,25 +458,29 @@ plot_IbbEventsPerSession <- function(dataset) {
 ################
 
 plot_RoleChanges <- function(dataset){
-	# include only sessions where more than 1 user participated and which lasted not longer than 4 hours
+	
 	dataset = dataset[dataset$user.is.host,]
 	dataset = dataset[dataset$session.users.total > 1,]
-	dataset = dataset[dataset$session.time < 320,]
-	
-	# This would give the number of session with just one user
-	# sessionsOneUser <- NROW(dataset[dataset$session.users.total == 1,])
+	dataset <- dataset[dataset$session.time > 3,]
+	dataset = dataset[dataset$session.time < 300,]
 	
 	sessions = aggregate(dataset$filename, list(role.changes=dataset$role.changes), length)
+	
 	sessions$role.changes <- as.character(sessions$role.changes)
 	
 	print(
 			barchart(
 					role.changes ~ x,
 					data=sessions,
-					col = hcl((h = seq(0,120, by = 20))),
+					col = hcl(120),
 					xlab="Number of Sessions",
 					ylab="Role Changes",
-					main="Total Role Changes" 
+					main="Total Role Changes", 
+					panel <- function(...) {
+						args <- list(...);
+						panel.text(args$x,args$y,paste("       ", args$x,sep=""), cex=1.1);
+						panel.barchart(...)
+					}
 			)
 	)
 }
@@ -1124,7 +1128,7 @@ makePlots <- function() {
 	# Role Changes #
 	################
 	
-	pngPlot((file=paste(getwd(), "plots/roleChangesPerUser", sep="/")), 8, 8, function(){
+	pngPlot((file=paste(getwd(), "plots/roleChangesPerUser", sep="/")), 7, 8, function(){
 				plot_UsersPerRoleChanges(data)
 			})
 	
@@ -1136,11 +1140,11 @@ makePlots <- function() {
 				plot_RoleChangesVsTime(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/roleChangesPie", sep="/")), 8, 3, function(){
+	pngPlot((file=paste(getwd(), "plots/roleChangesPie", sep="/")), 7, 6, function(){
 				plot_RoleChangesPie(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/roleChangesBoxes", sep="/")), 9,4 , function(){
+	pngPlot((file=paste(getwd(), "plots/roleChangesBoxes", sep="/")), 7,4 , function(){
 				plot_RoleChangesBoxes(data)
 			})
 	
@@ -1148,11 +1152,11 @@ makePlots <- function() {
 	# Role Distribution #
 	#####################
 	
-	pngPlot((file=paste(getwd(), "plots/driverRatioBW", sep="/")), 8, 3, function(){
+	pngPlot((file=paste(getwd(), "plots/driverRatioBW", sep="/")), 8, 4, function(){
 				plot_DriverRatioBW(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/observerRatioBW", sep="/")), 8, 3, function(){
+	pngPlot((file=paste(getwd(), "plots/observerRatioBW", sep="/")), 8, 4, function(){
 				plot_ObserverRatioBW(data)
 			})
 	
@@ -1160,7 +1164,7 @@ makePlots <- function() {
 	# Users / Session #
 	###################
 	
-	pngPlot((file=paste(getwd(), "plots/usersPerSession", sep="/")), 12, 6, function(){
+	pngPlot((file=paste(getwd(), "plots/usersPerSession", sep="/")), 9, 6, function(){
 				plot_UsersPerSession(data)
 			})
 	
@@ -1168,7 +1172,7 @@ makePlots <- function() {
 				plot_UsersPerSessionPie(data)
 			})
 	
-	pngPlot( (file=paste(getwd(), "plots/sessionCount", sep="/")), 10, 8, function(){
+	pngPlot( (file=paste(getwd(), "plots/sessionCount", sep="/")), 9, 6, function(){
 				plot_SessionCount(data)
 			})
 	
