@@ -209,6 +209,46 @@ plot_SessionsPerWeek <- function(dataset){
 			))
 }
 
+plot_WeekDays <- function (dataset){
+	dataset <- subset(dataset,!duplicated(dataset$session.id))
+	x <- weekdays(dataset$session.local.start,)
+	mytable <- table(x)
+	lbls <- paste(names(mytable), "\n", mytable, sep="")
+	# R sorts factors alphabetically therefore this ugly workaround to get the week order of days right
+	recombobulate<-c(2,6,7,5,1,3,4)
+	print(
+			barchart(	
+					mytable[recombobulate], 
+					col = hcl(120),
+					horizontal = F,
+					ylab ="Sessions",
+					xlab ="Weekday"
+			
+			)
+	)
+}
+
+plot_Hour <- function(dataset) {
+	# this is not the real result as a lot of datasets were fixed (where the starting time was set to 00:00)
+	# therefore this time is represented way to often
+	dataset <- subset(dataset,!duplicated(dataset$session.id))
+	# dataset = dataset[dataset$session.local.start == ,]
+	
+	x <- format(dataset$session.local.start, "%H:00")
+	hourtab <- table(x)	
+	
+	lbls <- paste(names(hourtab), "\n", hourtab, sep="")
+	print(
+			barchart(
+					hourtab,
+					horizontal = F,
+					ylab ="Sessions",
+					xlab ="Hour",
+					col = hcl(120),
+			)
+	)
+}
+
 plot_SessionsPerWeekAndVersion <- function(dataset){
 	# Only look at the each session once
 	dataset = dataset[dataset$user.is.host,]
@@ -1098,6 +1138,14 @@ makePlots <- function() {
 	
 	pngPlot((file=paste(getwd(), "plots/sessionsPerWeek", sep="/")), 8, 6, function(){
 				plot_SessionsPerWeek(data)
+			})
+	
+	pngPlot((file=paste(getwd(), "plots/sessionsPerWeekday", sep="/")), 8, 6, function(){
+				plot_WeekDays(data)
+			})
+	
+	pngPlot((file=paste(getwd(), "plots/sessionsPerHourOfDay", sep="/")), 8, 6, function(){
+				plot_Hour(data)
 			})
 	
 	pngPlot((file=paste(getwd(), "plots/OS", sep="/")), 10, 6, function(){
