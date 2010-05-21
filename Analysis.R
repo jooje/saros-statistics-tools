@@ -698,8 +698,8 @@ plot_SessionCount <- function(dataset) {
 	# aggregate the sessions due to session count
 	# session count is incremented after each session started so this
 	# should give an impression on the long term usage of Saros
+	dataset <- subset(dataset,!duplicated(dataset$session.id))
 	sessions = aggregate(dataset$filename, list(session.count=dataset$session.count), length)
-	
 	mytable <- table(dataset$session.count)
 	print(mytable)
 	lbls <- paste(names(mytable), "\n", mytable, sep="")
@@ -707,7 +707,7 @@ plot_SessionCount <- function(dataset) {
 	print(
 			barplot(
 					mytable,
-					col = hcl(h = seq(0, 240, by = 5)),
+					col = hcl(h = seq(0, 240, by = 4)),
 					las = 1,
 					ylab = "Number of Sessions",
 					xlab = "Session Count",
