@@ -196,7 +196,7 @@ plot_SessionsPerWeek <- function(dataset){
 					ylim=c(0, max(sessions$x)*1.1),
 					data=sessions,
 					stack=T,
-					col = hcl(h = seq(0, 240, by = 20)),
+					col = hcl(120),
 					panel=function(...){
 						panel.grid(h=-1,v=max(weekNumeric) + 1 - min(weekNumeric))
 						panel.barchart(...)
@@ -467,7 +467,7 @@ plot_averageCommunicationUsage <- function(dataset) {
 	avgThr <- as.table(avgThr)
 	
 	barplot(avgThr,
-			col = hcl(h = seq(0, 120, by = 20)),
+			col = hcl(120),
 			las = 1,
 			ylab = "Total KB")	
 }
@@ -485,7 +485,7 @@ plot_IbbEventsPerSession <- function(dataset) {
 	print(
 			barplot(
 					mytable,
-					col = hcl(h = seq(0, 240, by = 40)),
+					col = hcl(120),
 					las = 1,
 					xlab = "Number of IBB events",
 					ylab = "Sessions"
@@ -614,7 +614,7 @@ plot_RoleChangesPie <- function(dataset) {
 # Role Distribution #
 #####################
 
-plot_DriverRatioBW <- function(dataset) {
+plot_ObserverRatioBW <- function(dataset) {
 	dataset = dataset[dataset$session.users.total > 1,]
 	dataset = dataset[dataset$session.time < 300,]
 	
@@ -622,12 +622,13 @@ plot_DriverRatioBW <- function(dataset) {
 	
 	print(
 			bwplot(
-					host ~ role.driver.percent,
+					host ~ role.observer.percent,
 					data=dataset,
 					xlab="Time in driver role",
 					ylab="User is host",
 					panel=panel.bwstrip,
-					type="mean,strip,density,N"
+					type="mean,strip,density,N,grid",
+					strip.limit = 1000
 			)
 	)
 }
@@ -645,7 +646,8 @@ plot_ObserverRatioBW <- function(dataset) {
 					xlab="Time in driver role",
 					ylab="User is host",
 					panel=panel.bwstrip,
-					type="mean,strip,density,N"
+					type="mean,strip,density,N,grid",
+					strip.limit = 1000
 			)
 	)
 }
@@ -665,7 +667,7 @@ plot_UsersPerSession <- function(dataset) {
 					ylab="Number of Users",
 					log = "x",
 					xlim=c(0, max(sessions$x) + 15),
-					col = hcl((h = seq(0,320, by = 80))),
+					col = hcl(120),
 					data=sessions,
 					auto.key = list(
 							points = FALSE, 
@@ -730,6 +732,7 @@ plot_SessionDuration <- function(dataset){
 	print(
 			dotchart2(
 					sessions,
+					xlab = "Duration in minutes",
 					main="Session Duration", 
 					cex=0.8,
 					col = "blue",
@@ -863,7 +866,7 @@ plot_SessionDurationBar <- function(dataset) {
 	print(
 			barplot(
 					duration,
-					col = hcl(h = seq(0, 220, by = 20)),
+					col = hcl(120),
 					las = 1,
 					ylab = "Length",
 					main="Session duration in minutes"
@@ -1078,6 +1081,7 @@ plot_NonParallelPercentageVsChars <- function(dataset) {
 	dataset = dataset[dataset$user.is.host,]
 	dataset = dataset[dataset$session.users.total > 1,]
 	dataset = dataset[dataset$session.time < 240,]
+	dataset = dataset[dataset$textedits.chars < 10000,]
 	
 	print(
 			xyplot(
@@ -1130,45 +1134,45 @@ makePlots <- function() {
 	# General Stuff #
 	#################
 	
-	pngPlot((file=paste(getwd(), "plots/downloads", sep="/")), 6, 3, plot_DownloadsPerMonth)
+	pngPlot((file=paste(getwd(), "plots/downloads", sep="/")), 7, 4, plot_DownloadsPerMonth)
 	
-	pngPlot((file=paste(getwd(), "plots/sessionsPerWeekAndVersion", sep="/")), 8, 6, function(){
+	pngPlot((file=paste(getwd(), "plots/sessionsPerWeekAndVersion", sep="/")), 7, 4, function(){
 				plot_SessionsPerWeekAndVersion(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/sessionsPerWeek", sep="/")), 8, 6, function(){
+	pngPlot((file=paste(getwd(), "plots/sessionsPerWeek", sep="/")), 7, 4,function(){
 				plot_SessionsPerWeek(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/sessionsPerWeekday", sep="/")), 8, 6, function(){
+	pngPlot((file=paste(getwd(), "plots/sessionsPerWeekday", sep="/")), 7, 4, function(){
 				plot_WeekDays(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/sessionsPerHourOfDay", sep="/")), 8, 6, function(){
+	pngPlot((file=paste(getwd(), "plots/sessionsPerHourOfDay", sep="/")),7, 4, function(){
 				plot_Hour(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/OS", sep="/")), 10, 6, function(){
+	pngPlot((file=paste(getwd(), "plots/OS", sep="/")), 7, 4, function(){
 				plot_OS(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/OS(WindowsGrouped)", sep="/")), 10, 6, function(){
+	pngPlot((file=paste(getwd(), "plots/OS(WindowsGrouped)", sep="/")), 7, 4, function(){
 				plot_OSgroupWindows(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/sessionsPerWeekAndEclipseVersion", sep="/")), 8, 6, function(){
+	pngPlot((file=paste(getwd(), "plots/sessionsPerWeekAndEclipseVersion", sep="/")), 7, 4, function(){
 				plot_SessionsPerWeekAndEclipseVersion(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/iBBEventsPerSession", sep="/")), 11, 7, function(){
+	pngPlot((file=paste(getwd(), "plots/iBBEventsPerSession", sep="/")), 7, 4, function(){
 				plot_IbbEventsPerSession(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/feedbackPie", sep="/")), 8, 3, function(){
+	pngPlot((file=paste(getwd(), "plots/feedbackPie", sep="/")), 5, 5, function(){
 				plot_FeedbackDisabled(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/averageThroughput", sep="/")), 8, 3, function(){
+	pngPlot((file=paste(getwd(), "plots/averageThroughput", sep="/")), 7, 4, function(){
 				plot_averageCommunicationUsage(data)
 			})
 	
@@ -1176,19 +1180,19 @@ makePlots <- function() {
 	# Role Changes #
 	################
 	
-	pngPlot((file=paste(getwd(), "plots/roleChangesPerUser", sep="/")), 7, 8, function(){
+	pngPlot((file=paste(getwd(), "plots/roleChangesPerUser", sep="/")), 7, 4, function(){
 				plot_UsersPerRoleChanges(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/roleChanges", sep="/")), 8, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/roleChanges", sep="/")), 7, 4, function(){
 				plot_RoleChanges(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/roleChangesVsTime", sep="/")), 8, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/roleChangesVsTime", sep="/")), 7, 4, function(){
 				plot_RoleChangesVsTime(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/roleChangesPie", sep="/")), 7, 6, function(){
+	pngPlot((file=paste(getwd(), "plots/roleChangesPie", sep="/")), 7, 4, function(){
 				plot_RoleChangesPie(data)
 			})
 	
@@ -1200,11 +1204,11 @@ makePlots <- function() {
 	# Role Distribution #
 	#####################
 	
-	pngPlot((file=paste(getwd(), "plots/driverRatioBW", sep="/")), 8, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/driverRatioBW", sep="/")), 7, 4, function(){
 				plot_DriverRatioBW(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/observerRatioBW", sep="/")), 8, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/observerRatioBW", sep="/")), 7, 4, function(){
 				plot_ObserverRatioBW(data)
 			})
 	
@@ -1212,15 +1216,15 @@ makePlots <- function() {
 	# Users / Session #
 	###################
 	
-	pngPlot((file=paste(getwd(), "plots/usersPerSession", sep="/")), 9, 6, function(){
+	pngPlot((file=paste(getwd(), "plots/usersPerSession", sep="/")), 7, 4, function(){
 				plot_UsersPerSession(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/usersPerSessionPie", sep="/")), 8, 3, function(){
+	pngPlot((file=paste(getwd(), "plots/usersPerSessionPie", sep="/")), 7, 4, function(){
 				plot_UsersPerSessionPie(data)
 			})
 	
-	pngPlot( (file=paste(getwd(), "plots/sessionCount", sep="/")), 9, 6, function(){
+	pngPlot( (file=paste(getwd(), "plots/sessionCount", sep="/")), 7, 4, function(){
 				plot_SessionCount(data)
 			})
 	
@@ -1228,23 +1232,23 @@ makePlots <- function() {
 	# Session Duration #
 	####################
 	
-	pngPlot((file=paste(getwd(), "plots/SessionDuration(over50edits)", sep="/")), 8, 5, function(){
+	pngPlot((file=paste(getwd(), "plots/SessionDuration(over50edits)", sep="/")), 7, 4, function(){
 				plot_SessionDurationBW(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/sessionDuration2", sep="/")), 8, 3, function(){
+	pngPlot((file=paste(getwd(), "plots/sessionDuration2", sep="/")), 7, 4, function(){
 				plot_SessionDuration(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/sessionDurationPie", sep="/")), 8, 3, function(){
+	pngPlot((file=paste(getwd(), "plots/sessionDurationPie", sep="/")), 7, 4, function(){
 				plot_SessionDurationPie(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/sessionDurationBar", sep="/")), 8, 3, function(){
+	pngPlot((file=paste(getwd(), "plots/sessionDurationBar", sep="/")), 7, 4, function(){
 				plot_SessionDurationBar(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/sessionDurationBox", sep="/")), 20,15, function(){
+	pngPlot((file=paste(getwd(), "plots/sessionDurationBox", sep="/")), 7, 4, function(){
 				plot_SessionDurationBox(data)
 			})
 	
@@ -1253,35 +1257,35 @@ makePlots <- function() {
 	# Edits / Chars #
 	#################
 	
-	pngPlot((file=paste(getwd(), "plots/sessionDurationVsLocalEdits", sep="/")), 20, 7, function(){
+	pngPlot((file=paste(getwd(), "plots/sessionDurationVsLocalEdits", sep="/")), 7, 4, function(){
 				plot_SessionDurationVsLocalEdits(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/localEdits", sep="/")), 8, 3, function(){
+	pngPlot((file=paste(getwd(), "plots/localEdits", sep="/")), 7, 4, function(){
 				plot_LocalEdits(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/localChars", sep="/")), 8, 3, function(){
+	pngPlot((file=paste(getwd(), "plots/localChars", sep="/")),7, 4, function(){
 				plot_LocalChars(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/degreeOfParallelism", sep="/")), 8, 8, function(){
+	pngPlot((file=paste(getwd(), "plots/degreeOfParallelism", sep="/")), 5, 5, function(){
 				plot_DegreeOfParallelism(data)
 			})	
 	
-	pngPlot((file=paste(getwd(), "plots/localEditsVsChars", sep="/")), 8, 3, function(){
+	pngPlot((file=paste(getwd(), "plots/localEditsVsChars", sep="/")), 7, 4, function(){
 				plot_LocalEditsVsChars(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/nonParallelEditsVsCharEdits", sep="/")), 8, 6, function(){
+	pngPlot((file=paste(getwd(), "plots/nonParallelEditsVsCharEdits", sep="/")), 7, 4, function(){
 				plot_NonParallelEditsVsEditsCharBased(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/nonParallelEditsPerSession", sep="/")), 8, 3, function(){
+	pngPlot((file=paste(getwd(), "plots/nonParallelEditsPerSession", sep="/")), 7, 4, function(){
 				plot_NonParallelEditsPerSession(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/nonParallelPercentageVsChars", sep="/")), 8, 8, function(){
+	pngPlot((file=paste(getwd(), "plots/nonParallelPercentageVsChars", sep="/")), 5, 5, function(){
 				plot_NonParallelPercentageVsChars(data)
 			})	
 	
