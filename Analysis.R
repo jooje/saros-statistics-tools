@@ -624,7 +624,7 @@ plot_ObserverRatioBW <- function(dataset) {
 			bwplot(
 					host ~ role.observer.percent,
 					data=dataset,
-					xlab="Time in driver role",
+					xlab="Time in Observer role",
 					ylab="User is host",
 					panel=panel.bwstrip,
 					type="mean,strip,density,N,grid",
@@ -633,7 +633,7 @@ plot_ObserverRatioBW <- function(dataset) {
 	)
 }
 
-plot_ObserverRatioBW <- function(dataset) {
+plot_DriverRatioBW <- function(dataset) {
 	dataset = dataset[dataset$session.users.total > 1,]
 	dataset = dataset[dataset$session.time < 300,]
 	
@@ -641,7 +641,7 @@ plot_ObserverRatioBW <- function(dataset) {
 	
 	print(
 			bwplot(
-					host ~ role.observer.percent,
+					host ~ role.driver.percent,
 					data=dataset,
 					xlab="Time in driver role",
 					ylab="User is host",
