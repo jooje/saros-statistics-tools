@@ -229,10 +229,10 @@ plot_WeekDays <- function (dataset){
 }
 
 plot_Hour <- function(dataset) {
-	# this is not the real result as a lot of datasets were fixed (where the starting time was set to 00:00)
-	# therefore this time is represented way to often
+	# filter all sessions were the starting time was repaired and set to 00:00
 	dataset <- subset(dataset,!duplicated(dataset$session.id))
-	# dataset = dataset[dataset$session.local.start == ,]
+	dataset$hour <- format(dataset$session.local.start, "%H:%M")
+	dataset = dataset[dataset$hour != "00:00",]
 	
 	x <- format(dataset$session.local.start, "%H:00")
 	hourtab <- table(x)	
@@ -692,7 +692,7 @@ plot_UsersPerSessionPie <- function(dataset) {
 			pie3D(	mytable, 
 					labels = lbls,
 					main="Users per Session",
-					explode = 0.1)	
+					explode = 0.3)	
 	)
 }
 
@@ -1134,45 +1134,45 @@ makePlots <- function() {
 	# General Stuff #
 	#################
 	
-	pngPlot((file=paste(getwd(), "plots/downloads", sep="/")), 7, 4, plot_DownloadsPerMonth)
+	pngPlot((file=paste(getwd(), "plots/downloads", sep="/")), 9, 5, plot_DownloadsPerMonth)
 	
-	pngPlot((file=paste(getwd(), "plots/sessionsPerWeekAndVersion", sep="/")), 7, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/sessionsPerWeekAndVersion", sep="/")), 9, 5, function(){
 				plot_SessionsPerWeekAndVersion(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/sessionsPerWeek", sep="/")), 7, 4,function(){
+	pngPlot((file=paste(getwd(), "plots/sessionsPerWeek", sep="/")), 9, 5,function(){
 				plot_SessionsPerWeek(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/sessionsPerWeekday", sep="/")), 7, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/sessionsPerWeekday", sep="/")), 9, 5, function(){
 				plot_WeekDays(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/sessionsPerHourOfDay", sep="/")),7, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/sessionsPerHourOfDay", sep="/")), 9, 5, function(){
 				plot_Hour(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/OS", sep="/")), 7, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/OS", sep="/")), 9, 5, function(){
 				plot_OS(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/OS(WindowsGrouped)", sep="/")), 7, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/OSgrouped", sep="/")), 9, 5, function(){
 				plot_OSgroupWindows(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/sessionsPerWeekAndEclipseVersion", sep="/")), 7, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/sessionsPerWeekAndEclipseVersion", sep="/")), 9, 5, function(){
 				plot_SessionsPerWeekAndEclipseVersion(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/iBBEventsPerSession", sep="/")), 7, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/iBBEventsPerSession", sep="/")), 9, 5, function(){
 				plot_IbbEventsPerSession(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/feedbackPie", sep="/")), 5, 5, function(){
+	pngPlot((file=paste(getwd(), "plots/feedbackPie", sep="/")), 6, 6, function(){
 				plot_FeedbackDisabled(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/averageThroughput", sep="/")), 7, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/averageThroughput", sep="/")), 9, 5, function(){
 				plot_averageCommunicationUsage(data)
 			})
 	
@@ -1180,23 +1180,23 @@ makePlots <- function() {
 	# Role Changes #
 	################
 	
-	pngPlot((file=paste(getwd(), "plots/roleChangesPerUser", sep="/")), 7, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/roleChangesPerUser", sep="/")), 9, 5, function(){
 				plot_UsersPerRoleChanges(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/roleChanges", sep="/")), 7, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/roleChanges", sep="/")), 9, 5, function(){
 				plot_RoleChanges(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/roleChangesVsTime", sep="/")), 7, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/roleChangesVsTime", sep="/")), 9, 5, function(){
 				plot_RoleChangesVsTime(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/roleChangesPie", sep="/")), 7, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/roleChangesPie", sep="/")), 9, 5, function(){
 				plot_RoleChangesPie(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/roleChangesBoxes", sep="/")), 7,4 , function(){
+	pngPlot((file=paste(getwd(), "plots/roleChangesBoxes", sep="/")), 9, 5, function(){
 				plot_RoleChangesBoxes(data)
 			})
 	
@@ -1204,11 +1204,11 @@ makePlots <- function() {
 	# Role Distribution #
 	#####################
 	
-	pngPlot((file=paste(getwd(), "plots/driverRatioBW", sep="/")), 7, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/driverRatioBW", sep="/")), 9, 5, function(){
 				plot_DriverRatioBW(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/observerRatioBW", sep="/")), 7, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/observerRatioBW", sep="/")), 9, 5, function(){
 				plot_ObserverRatioBW(data)
 			})
 	
@@ -1232,23 +1232,23 @@ makePlots <- function() {
 	# Session Duration #
 	####################
 	
-	pngPlot((file=paste(getwd(), "plots/SessionDuration(over50edits)", sep="/")), 7, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/SessionDuration(over50edits)", sep="/")), 9, 5, function(){
 				plot_SessionDurationBW(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/sessionDuration2", sep="/")), 7, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/sessionDuration2", sep="/")), 9, 5, function(){
 				plot_SessionDuration(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/sessionDurationPie", sep="/")), 7, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/sessionDurationPie", sep="/")), 9, 5, function(){
 				plot_SessionDurationPie(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/sessionDurationBar", sep="/")), 7, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/sessionDurationBar", sep="/")), 9, 5, function(){
 				plot_SessionDurationBar(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/sessionDurationBox", sep="/")), 7, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/sessionDurationBox", sep="/")), 9, 5, function(){
 				plot_SessionDurationBox(data)
 			})
 	
@@ -1257,37 +1257,39 @@ makePlots <- function() {
 	# Edits / Chars #
 	#################
 	
-	pngPlot((file=paste(getwd(), "plots/sessionDurationVsLocalEdits", sep="/")), 7, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/sessionDurationVsLocalEdits", sep="/")), 9, 5, function(){
 				plot_SessionDurationVsLocalEdits(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/localEdits", sep="/")), 7, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/localEdits", sep="/")), 9, 5, function(){
 				plot_LocalEdits(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/localChars", sep="/")),7, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/localChars", sep="/")), 9, 5, function(){
 				plot_LocalChars(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/degreeOfParallelism", sep="/")), 5, 5, function(){
+	pngPlot((file=paste(getwd(), "plots/degreeOfParallelism", sep="/")), 6, 6, function(){
 				plot_DegreeOfParallelism(data)
 			})	
 	
-	pngPlot((file=paste(getwd(), "plots/localEditsVsChars", sep="/")), 7, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/localEditsVsChars", sep="/")), 9, 5, function(){
 				plot_LocalEditsVsChars(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/nonParallelEditsVsCharEdits", sep="/")), 7, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/nonParallelEditsVsCharEdits", sep="/")), 9, 5, function(){
 				plot_NonParallelEditsVsEditsCharBased(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/nonParallelEditsPerSession", sep="/")), 7, 4, function(){
+	pngPlot((file=paste(getwd(), "plots/nonParallelEditsPerSession", sep="/")), 9, 5, function(){
 				plot_NonParallelEditsPerSession(data)
 			})
 	
-	pngPlot((file=paste(getwd(), "plots/nonParallelPercentageVsChars", sep="/")), 5, 5, function(){
+	pngPlot((file=paste(getwd(), "plots/nonParallelPercentageVsChars", sep="/")), 6, 6, function(){
 				plot_NonParallelPercentageVsChars(data)
 			})	
+	
+	print("Plotting finished...")
 	
 }
 
