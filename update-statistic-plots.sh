@@ -17,7 +17,7 @@ cd $BASE_DIR
 mkdir -p $AGGREGATED_DIR
 rm -f $AGGREGATED_DIR/$AGGREGATED_FILENAME
 
-java -jar $SCRIPT_DIR/StatAggregator.jar $SOURCE_DATA_DIR $AGGREGATED_DIR
+java -Xmx256m -jar $SCRIPT_DIR/StatAggregator.jar $SOURCE_DATA_DIR $AGGREGATED_DIR
 
 # plots dir is hard-coded in StatAggregator
 rm -f $BASE_DIR/plots/*
