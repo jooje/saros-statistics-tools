@@ -1,5 +1,5 @@
 #########################################################
-# R script that analyzes Saros statistics data          #
+#  R script that analyzes Saros statistics data         #
 # 	Based on a script by Christopher Oezbeck	#
 #   extended any partially improved by M. v. Hoffen     #
 #########################################################
